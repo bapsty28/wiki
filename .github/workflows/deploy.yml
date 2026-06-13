@@ -15,7 +15,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           cache: 'yarn'
 
       - name: Install dependencies
@@ -46,9 +46,8 @@ jobs:
 
       - name: Install production deps and restart
         run: |
-          ssh -i ~/.ssh/deploy_key root@${{ secrets.VPS_HOST }} << 'EOF'
-            cd /opt/wikijs
-            yarn install --production --frozen-lockfile
-            chown -R wikijs:wikijs /opt/wikijs
-            systemctl restart wikijs
-          EOF
+          ssh -i ~/.ssh/deploy_key root@${{ secrets.VPS_HOST }} \
+            "cd /opt/wikijs && \
+             yarn install --production --frozen-lockfile && \
+             chown -R wikijs:wikijs /opt/wikijs && \
+             systemctl restart wikijs"
