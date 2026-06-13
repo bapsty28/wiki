@@ -1,0 +1,54 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build production assets
+        run: yarn build
+        env:
+          NODE_OPTIONS: --openssl-legacy-provider
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -t ed25519 ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Sync built files to VPS
+        run: |
+          rsync -az --delete \
+            --exclude='.git' \
+            --exclude='node_modules' \
+            --exclude='config.yml' \
+            --exclude='data' \
+            --exclude='.claude' \
+            -e "ssh -i ~/.ssh/deploy_key" \
+            ./ root@${{ secrets.VPS_HOST }}:/opt/wikijs/
+
+      - name: Install production deps and restart
+        run: |
+          ssh -i ~/.ssh/deploy_key root@${{ secrets.VPS_HOST }} << 'EOF'
+            cd /opt/wikijs
+            yarn install --production --frozen-lockfile
+            chown -R wikijs:wikijs /opt/wikijs
+            systemctl restart wikijs
+          EOF
