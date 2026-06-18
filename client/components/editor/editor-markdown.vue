@@ -763,9 +763,9 @@ export default {
       this.onCmInput(this.$store.get('editor/content'))
     })
     if (this.$vuetify.breakpoint.mdAndUp) {
-      this.cm.setSize(null, 'calc(100vh - 112px - 24px)')
+      this.cm.setSize(null, 'calc(100dvh - 112px - 24px)')
     } else {
-      this.cm.setSize(null, 'calc(100vh - 112px - 16px)')
+      this.cm.setSize(null, 'calc(100dvh - 112px - 16px)')
     }
 
     // Set Keybindings
@@ -863,8 +863,8 @@ export default {
 
 <style lang='scss'>
 
-$editor-height: calc(100vh - 112px - 24px);
-$editor-height-mobile: calc(100vh - 112px - 16px);
+$editor-height: calc(100dvh - 112px - 24px);
+$editor-height-mobile: calc(100dvh - 112px - 16px);
 
 .editor-markdown {
   &-main {
@@ -978,6 +978,9 @@ $editor-height-mobile: calc(100vh - 112px - 16px);
   }
 
   &-toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 5;
     background-color: mc('blue', '700');
     background-image: linear-gradient(to bottom, mc('blue', '700') 0%, mc('blue','800') 100%);
     color: #FFF;

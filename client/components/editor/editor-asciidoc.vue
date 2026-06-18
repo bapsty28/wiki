@@ -416,9 +416,9 @@ export default {
       this.onCmInput(this.$store.get('editor/content'))
     })
     if (this.$vuetify.breakpoint.mdAndUp) {
-      this.cm.setSize(null, 'calc(100vh - 137px)')
+      this.cm.setSize(null, 'calc(100dvh - 137px)')
     } else {
-      this.cm.setSize(null, 'calc(100vh - 112px - 16px)')
+      this.cm.setSize(null, 'calc(100dvh - 112px - 16px)')
     }
 
     // Set Keybindings
@@ -488,8 +488,8 @@ export default {
 </script>
 
 <style lang='scss'>
-$editor-ascii-height: calc(100vh - 137px);
-$editor-ascii-height-mobile: calc(100vh - 112px - 16px);
+$editor-ascii-height: calc(100dvh - 137px);
+$editor-ascii-height-mobile: calc(100dvh - 112px - 16px);
 
 .editor-asciidoc {
   &-main {
@@ -603,6 +603,9 @@ $editor-ascii-height-mobile: calc(100vh - 112px - 16px);
   }
 
   &-toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 5;
     background-color: mc('blue', '700');
     background-image: linear-gradient(to bottom, mc('blue', '700') 0%, mc('blue','800') 100%);
     color: #FFF;

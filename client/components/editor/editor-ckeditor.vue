@@ -189,6 +189,9 @@ $editor-height-mobile: calc(100vh - 56px - 16px);
   }
 
   .ck.ck-toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 5;
     border: none;
     justify-content: center;
     background-color: mc('grey', '300');
