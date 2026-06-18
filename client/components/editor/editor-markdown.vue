@@ -422,9 +422,15 @@ export default {
   },
   methods: {
     onViewportResize() {
-      if (!this.cm || !window.visualViewport) return
+      if (!window.visualViewport) return
       const offset = this.$vuetify.breakpoint.mdAndUp ? 136 : 128
-      this.cm.setSize(null, `${window.visualViewport.height - offset}px`)
+      if (this.cm) {
+        this.cm.setSize(null, `${window.visualViewport.height - offset}px`)
+      }
+      this.$nextTick(() => {
+        const mainWrap = document.querySelector('.v-main__wrap')
+        if (mainWrap) mainWrap.scrollTop = 0
+      })
     },
     toggleModal(key) {
       this.activeModal = (this.activeModal === key) ? '' : key
