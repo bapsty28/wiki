@@ -197,6 +197,11 @@ export default {
   },
 
   methods: {
+    onViewportResize() {
+      if (!this.cm || !window.visualViewport) return
+      const offset = this.$vuetify.breakpoint.mdAndUp ? 137 : 128
+      this.cm.setSize(null, `${window.visualViewport.height - offset}px`)
+    },
     toggleModal(key) {
       this.activeModal = (this.activeModal === key) ? '' : key
       this.helpShown = false
@@ -420,6 +425,9 @@ export default {
     } else {
       this.cm.setSize(null, 'calc(100vh - 112px - 16px)')
     }
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', this.onViewportResize)
+    }
 
     // Set Keybindings
 
@@ -483,6 +491,9 @@ export default {
   },
   beforeDestroy() {
     this.$root.$off('editorInsert')
+    if (window.visualViewport) {
+      window.visualViewport.removeEventListener('resize', this.onViewportResize)
+    }
   }
 }
 </script>
