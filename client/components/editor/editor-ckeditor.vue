@@ -2,6 +2,10 @@
   .editor-ckeditor
     div(ref='toolbarContainer')
     div.contents(ref='editor')
+    transition(name='fade')
+      .editor-ckeditor-copy-btn(v-if='isInTable', @click='copyTable')
+        v-icon(small) {{ copyDone ? 'mdi-check' : 'mdi-content-copy' }}
+        span {{ copyDone ? 'Copied!' : 'Copy Table' }}
     v-system-bar.editor-ckeditor-sysbar(dark, status, color='grey darken-3')
       .caption.editor-ckeditor-sysbar-locale {{locale.toUpperCase()}}
       .caption.px-3 /{{path}}
@@ -43,7 +47,9 @@ export default {
       },
       content: '',
       isConflict: false,
-      insertLinkDialog: false
+      insertLinkDialog: false,
+      isInTable: false,
+      copyDone: false
     }
   },
   computed: {
@@ -55,6 +61,42 @@ export default {
     activeModal: sync('editor/activeModal')
   },
   methods: {
+    async copyTable () {
+      const focus = this.editor.model.document.selection.focus
+      if (!focus) return
+      let tableNode = null
+      let node = focus.parent
+      while (node && node.name !== '$root') {
+        if (node.name === 'table') { tableNode = node; break }
+        node = node.parent
+      }
+      if (!tableNode) return
+      const viewElement = this.editor.editing.mapper.toViewElement(tableNode)
+      if (!viewElement) return
+      const domElement = this.editor.editing.view.domConverter.mapViewToDom(viewElement)
+      if (!domElement) return
+      const html = domElement.outerHTML
+      try {
+        if (navigator.clipboard && window.ClipboardItem) {
+          await navigator.clipboard.write([new ClipboardItem({
+            'text/html': new Blob([html], { type: 'text/html' }),
+            'text/plain': new Blob([domElement.textContent || ''], { type: 'text/plain' })
+          })])
+        } else {
+          const range = document.createRange()
+          range.selectNode(domElement)
+          const sel = window.getSelection()
+          sel.removeAllRanges()
+          sel.addRange(range)
+          document.execCommand('copy')
+          sel.removeAllRanges()
+        }
+        this.copyDone = true
+        setTimeout(() => { this.copyDone = false }, 2000)
+      } catch (e) {
+        console.error('Copy table failed:', e)
+      }
+    },
     insertLink () {
       this.insertLinkDialog = true
     },
@@ -101,6 +143,18 @@ export default {
     this.editor.model.document.on('change:data', _.debounce(evt => {
       this.$store.set('editor/content', beautify(this.editor.getData(), { indent_size: 2, end_with_newline: true }))
     }, 300))
+
+    // Show copy button when cursor is inside a table
+    this.editor.model.document.selection.on('change:range', () => {
+      const focus = this.editor.model.document.selection.focus
+      if (!focus) { this.isInTable = false; return }
+      let node = focus.parent
+      while (node && node.name !== '$root') {
+        if (node.name === 'table') { this.isInTable = true; return }
+        node = node.parent
+      }
+      this.isInTable = false
+    })
 
     // Retain last-used font size when cursor enters an empty table cell
     let lastFontSize = null
@@ -191,6 +245,35 @@ $editor-height-mobile: calc(100vh - 56px - 16px);
   @include until($tablet) {
     height: $editor-height-mobile;
     max-height: $editor-height-mobile;
+  }
+
+  &-copy-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: #fff;
+    border: 1px solid mc('grey', '300');
+    border-radius: 4px;
+    padding: 4px 10px;
+    cursor: pointer;
+    font-size: .8rem;
+    box-shadow: 0 2px 6px rgba(0,0,0,.15);
+    user-select: none;
+    @at-root .theme--dark & {
+      background: mc('grey', '800');
+      border-color: mc('grey', '600');
+      color: #fff;
+    }
+    &:hover {
+      background: mc('grey', '100');
+      @at-root .theme--dark & {
+        background: mc('grey', '700');
+      }
+    }
   }
 
   &-sysbar {
