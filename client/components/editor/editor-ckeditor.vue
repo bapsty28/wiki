@@ -225,15 +225,10 @@ $editor-height-mobile: calc(100vh - 56px - 16px);
     border: none;
     background-color: mc('grey', '300');
     color: #FFF;
-    overflow-x: auto;
-    scrollbar-width: none;
-    &::-webkit-scrollbar {
-      display: none;
-    }
   }
 
   .ck.ck-toolbar__items {
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
   }
 
   > .ck-editor__editable {
