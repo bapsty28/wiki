@@ -69,6 +69,9 @@ export default {
       language: this.locale,
       placeholder: 'Type the page content here',
       disableNativeSpellChecker: false,
+      toolbar: {
+        shouldNotGroupWhenFull: true
+      },
       // TODO: Mention autocomplete
       //
       // mention: {
@@ -220,13 +223,17 @@ $editor-height-mobile: calc(100vh - 56px - 16px);
     top: 0;
     z-index: 5;
     border: none;
-    justify-content: center;
     background-color: mc('grey', '300');
     color: #FFF;
+    overflow-x: auto;
+    scrollbar-width: none;
+    &::-webkit-scrollbar {
+      display: none;
+    }
   }
 
   .ck.ck-toolbar__items {
-    justify-content: center;
+    flex-wrap: nowrap;
   }
 
   > .ck-editor__editable {
