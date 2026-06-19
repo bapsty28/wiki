@@ -99,6 +99,33 @@ export default {
       this.$store.set('editor/content', beautify(this.editor.getData(), { indent_size: 2, end_with_newline: true }))
     }, 300))
 
+    // Retain last-used font size when cursor enters an empty table cell
+    let lastFontSize = null
+    const fontSizeCommand = this.editor.commands.get('fontSize')
+    if (fontSizeCommand) {
+      fontSizeCommand.on('execute', (evt, args) => {
+        const value = args?.[0]?.value
+        lastFontSize = value || null
+      })
+      this.editor.model.document.selection.on('change:range', () => {
+        if (!lastFontSize) return
+        const selection = this.editor.model.document.selection
+        if (!selection.isCollapsed) return
+        const focus = selection.focus
+        if (!focus) return
+        const parent = focus.parent
+        if (
+          parent.name === 'paragraph' &&
+          parent.parent?.name === 'tableCell' &&
+          parent.isEmpty
+        ) {
+          this.editor.model.change(writer => {
+            writer.setSelectionAttribute('fontSize', lastFontSize)
+          })
+        }
+      })
+    }
+
     this.$root.$on('editorInsert', opts => {
       switch (opts.kind) {
         case 'IMAGE':
